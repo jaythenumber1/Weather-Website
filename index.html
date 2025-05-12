@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather Website</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      padding: 10px;
+      background-color: #f8f9fa;
+    }
+  </style>
+</head>
+<body class="bg-blue-50 text-gray-800 font-sans p-4">
+
+  <h1 class="text-3xl font-bold text-center mb-6">Today's Weather & NASA Picture</h1>
+
+  <!-- Weather Section -->
+  <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">🌦️ Weather Info</h2>
+    <form id="weather-form" class="flex flex-col sm:flex-row items-center gap-4 mb-4">
+      <input type="text" id="city" placeholder="Enter city" required 
+             class="w-full sm:w-auto flex-1 p-2 border border-gray-300 rounded"/>
+      <input type="text" id="country" placeholder="Country code (e.g. US)" required 
+             class="w-full sm:w-auto flex-1 p-2 border border-gray-300 rounded"/>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Get Weather</button>
+    </form>
+    <p id="weather-data" class="text-gray-700">Please enter a city and country to get weather.</p>
+  </div>
+
+  <!-- APOD Section -->
+  <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4">🪐 NASA Astronomy Picture of the Day</h2>
+    <div id="apod-media" class="mb-4">
+      <img id="apod-img" src="" alt="NASA APOD" width="600" class="mx-auto border rounded shadow hidden"/>
+    </div>
+    <p id="apod-title" class="font-bold text-lg mb-2"></p>
+    <p id="apod-desc" class="text-gray-700"></p>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center text-sm text-gray-600 mt-10">&copy; Weather Website 2025</footer>
+
+  <script>
+    // --- NASA APOD ---
+    fetch("https://api.nasa.gov/planetary/apod?api_key=ioVGp6FVErc8UXUucT14RavYeH2RnxMDDVm2OeYj")
+      .then(response => response.json())
+      .then(data => {
+        const mediaContainer = document.getElementById("apod-media");
+
+        if (data.media_type === "image") {
+          const img = document.getElementById("apod-img");
+          img.src = data.url;
+          img.classList.remove("hidden");
+        } else if (data.media_type === "video") {
+          const iframe = document.createElement("iframe");
+          iframe.src = data.url;
+          iframe.width = "100%";
+          iframe.height = "400";
+          iframe.frameBorder = "0";
+          iframe.allowFullscreen = true;
+          mediaContainer.appendChild(iframe);
+        }
+
+        document.getElementById("apod-title").textContent = data.title;
+        document.getElementById("apod-desc").textContent = data.explanation;
+      })
+      .catch(error => {
+        console.error("NASA APOD Error:", error);
+      });
+
+    // --- Weather Form Handling ---
+    const form = document.getElementById("weather-form");
+    form.addEventListener("submit", function(event) {
+      event.preventDefault();
+      const city = document.getElementById("city").value.trim();
+      const country = document.getElementById("country").value.trim().toUpperCase();
+      const apiKey = "5b2c13af0643ca5f8717a739c38f5589";
+
+      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${apiKey}&units=metric`)
+        .then(response => {
+          if (!response.ok) throw new Error("Weather fetch failed");
+          return response.json();
+        })
+        .then(data => {
+          const desc = data.weather[0].description;
+          const temp = data.main.temp;
+          document.getElementById("weather-data").textContent = 
+            `In ${data.name}, ${country}, it's currently ${temp}°C with ${desc}.`;
+        })
+        .catch(error => {
+          console.error("Weather API Error:", error);
+          document.getElementById("weather-data").textContent = "Weather data unavailable. Please check city and country.";
+        });
+    });
+  </script>
+  <footer>&copy Weather Website.com</footer>
+</body>
+</html>
