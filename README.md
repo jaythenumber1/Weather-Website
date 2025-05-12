@@ -7,13 +7,6 @@ This is a simple web application that allows users to:
 
 ---
 
-## 🚀 Live Preview
-
-You can deploy this project easily using [Netlify](https://www.netlify.com/) or [Vercel](https://vercel.com/).  
-No build tools required — just static HTML/CSS/JS!
-
----
-
 ## 📦 Features
 
 - 🌐 Global weather search (input city + country code like `Paris, FR`)
