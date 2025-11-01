@@ -49,6 +49,8 @@
 
   <script>
     // --- NASA APOD ---
+    const nasaApiKey = "ibZCqopDg2FZbWHekfODWULt1rhlei2jbe2Z4oms";
+    
     fetch("https://api.nasa.gov/planetary/apod?api_key=ioVGp6FVErc8UXUucT14RavYeH2RnxMDDVm2OeYj")
       .then(response => response.json())
       .then(data => {
@@ -103,3 +105,4 @@
   <footer>&copy Weather Website.com</footer>
 </body>
 </html>
+
