@@ -8,64 +8,72 @@
 
   <style>
     footer {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
       text-align: center;
       padding: 10px;
       background-color: #f8f9fa;
+      margin-top: 30px;
     }
   </style>
 </head>
-<body class="bg-blue-50 text-gray-800 font-sans p-4">
+<body class="bg-blue-50 text-gray-800 font-sans p-4 min-h-screen flex flex-col justify-between">
 
-  <h1 class="text-3xl font-bold text-center mb-6">Today's Weather & NASA Picture</h1>
+  <main class="flex-grow">
+    <h1 class="text-3xl font-bold text-center mb-6">Today's Weather & NASA Picture</h1>
 
-  <!-- Weather Section -->
-  <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6 mb-8">
-    <h2 class="text-xl font-semibold mb-4">🌦️ Weather Info</h2>
-    <form id="weather-form" class="flex flex-col sm:flex-row items-center gap-4 mb-4">
-      <input type="text" id="city" placeholder="Enter city" required 
-             class="w-full sm:w-auto flex-1 p-2 border border-gray-300 rounded"/>
-      <input type="text" id="country" placeholder="Country code (e.g. US)" required 
-             class="w-full sm:w-auto flex-1 p-2 border border-gray-300 rounded"/>
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Get Weather</button>
-    </form>
-    <p id="weather-data" class="text-gray-700">Please enter a city and country to get weather.</p>
-  </div>
+    <!-- Weather Section -->
+    <div class="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-4">🌦️ Weather Info</h2>
+      <form id="weather-form" class="flex flex-col sm:flex-row items-center gap-4 mb-4">
+        <input type="text" id="city" placeholder="Enter city" required 
+               class="w-full sm:w-auto flex-1 p-2 border border-gray-300 rounded"/>
+        <input type="text" id="country" placeholder="Country code (e.g. US)" required 
+               class="w-full sm:w-auto flex-1 p-2 border border-gray-300 rounded"/>
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+          Get Weather
+        </button>
+      </form>
 
-  <!-- APOD Section -->
-  <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6 mb-8">
-    <h2 class="text-xl font-semibold mb-4">🪐 NASA Astronomy Picture of the Day</h2>
-    <div id="apod-media" class="mb-4">
-      <img id="apod-img" src="" alt="NASA APOD" width="600" class="mx-auto border rounded shadow hidden"/>
+      <!-- Weather output -->
+      <div id="weather-output" class="flex flex-col items-center text-center space-y-2">
+        <div id="weather-loading" class="text-blue-600 hidden mt-2">Fetching weather...</div>
+        <img id="weather-icon" src="" alt="Weather Icon" class="hidden w-20 h-20" />
+        <p id="weather-data" class="text-gray-700">Please enter a city and country to get weather.</p>
+      </div>
     </div>
-    <p id="apod-title" class="font-bold text-lg mb-2"></p>
-    <p id="apod-desc" class="text-gray-700"></p>
-  </div>
+
+    <!-- APOD Section -->
+    <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold mb-4">🪐 NASA Astronomy Picture of the Day</h2>
+      <div id="apod-loading" class="text-blue-600 mb-2">Loading NASA picture...</div>
+      <div id="apod-media" class="mb-4"></div>
+      <p id="apod-title" class="font-bold text-lg mb-2"></p>
+      <p id="apod-desc" class="text-gray-700"></p>
+    </div>
+  </main>
 
   <!-- Footer -->
-  <footer class="text-center text-sm text-gray-600 mt-10">&copy; Weather Website 2025</footer>
+  <footer class="text-center text-sm text-gray-600">
+    &copy; 2025 Weather-website.com by N.Jayavardhan (Made in 2023.)
+  </footer>
 
   <script>
     // --- NASA APOD ---
-    const nasaApiKey = "ibZCqopDg2FZbWHekfODWULt1rhlei2jbe2Z4oms";
-    
     fetch("https://api.nasa.gov/planetary/apod?api_key=ioVGp6FVErc8UXUucT14RavYeH2RnxMDDVm2OeYj")
       .then(response => response.json())
       .then(data => {
+        document.getElementById("apod-loading").classList.add("hidden");
         const mediaContainer = document.getElementById("apod-media");
 
         if (data.media_type === "image") {
-          const img = document.getElementById("apod-img");
+          const img = document.createElement("img");
           img.src = data.url;
-          img.classList.remove("hidden");
+          img.alt = "NASA Astronomy Picture";
+          img.className = "mx-auto border rounded shadow max-w-full h-auto";
+          mediaContainer.appendChild(img);
         } else if (data.media_type === "video") {
           const iframe = document.createElement("iframe");
           iframe.src = data.url;
-          iframe.width = "100%";
-          iframe.height = "400";
-          iframe.frameBorder = "0";
+          iframe.className = "w-full h-80 rounded shadow";
           iframe.allowFullscreen = true;
           mediaContainer.appendChild(iframe);
         }
@@ -75,37 +83,48 @@
       })
       .catch(error => {
         console.error("NASA APOD Error:", error);
+        document.getElementById("apod-loading").textContent = "Failed to load NASA picture.";
       });
 
     // --- Weather Form Handling ---
     const form = document.getElementById("weather-form");
-    form.addEventListener("submit", function(event) {
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
+
       const city = document.getElementById("city").value.trim();
       const country = document.getElementById("country").value.trim().toUpperCase();
       const apiKey = "5b2c13af0643ca5f8717a739c38f5589";
 
-      fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${apiKey}&units=metric`)
-        .then(response => {
-          if (!response.ok) throw new Error("Weather fetch failed");
-          return response.json();
-        })
-        .then(data => {
-          const desc = data.weather[0].description;
-          const temp = data.main.temp;
-          document.getElementById("weather-data").textContent = 
-            `In ${data.name}, ${country}, it's currently ${temp}°C with ${desc}.`;
-        })
-        .catch(error => {
-          console.error("Weather API Error:", error);
-          document.getElementById("weather-data").textContent = "Weather data unavailable. Please check city and country.";
-        });
+      const weatherText = document.getElementById("weather-data");
+      const loadingText = document.getElementById("weather-loading");
+      const iconImg = document.getElementById("weather-icon");
+
+      weatherText.textContent = "";
+      iconImg.classList.add("hidden");
+      loadingText.classList.remove("hidden");
+
+      try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${apiKey}&units=metric`);
+        if (!response.ok) throw new Error("Weather fetch failed");
+        const data = await response.json();
+
+        loadingText.classList.add("hidden");
+
+        const desc = data.weather[0].description;
+        const temp = data.main.temp;
+        const iconCode = data.weather[0].icon; // Get weather icon code
+        const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+        iconImg.src = iconUrl;
+        iconImg.classList.remove("hidden");
+
+        weatherText.textContent = `In ${data.name}, ${country}, it's currently ${temp}°C with ${desc}.`;
+      } catch (error) {
+        console.error("Weather API Error:", error);
+        loadingText.classList.add("hidden");
+        weatherText.textContent = "Weather data unavailable. Please check city and country.";
+      }
     });
   </script>
-  <footer>&copy 2025 Weather-website.com by N.Jayavardhan
-            (Made in 2023.)</footer>
 </body>
 </html>
-
-
-
